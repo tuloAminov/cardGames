@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spades-game"
+version = "1.1.0"
+description = "Карточная игра «Пики» (Spades) на Python с веб-интерфейсом Flask и консольным режимом CLI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Spades Team" }
+]
+keywords = ["spades", "card-game", "flask", "cli", "ai", "game"]
+dependencies = [
+    "flask>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[project.scripts]
+spades-cli = "cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "cli*", "web*"]

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карточная игра «Пики» (Spades)</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Верхняя панель -->
+        <header class="game-header">
+            <div class="logo">
+                <span class="spade-icon">♠</span>
+                <h1>ПИКИ <span>SPADES</span></h1>
+            </div>
+
+            <div class="header-status">
+                <div class="status-pill round-pill" id="round-indicator">
+                    Раунд <span id="round-number">1</span>
+                </div>
+                <div class="stats-bar" id="user-stats-bar" title="Ваша статистика партий">
+                    <span class="stat-item">Игр: <strong id="stat-played">0</strong></span>
+                    <span class="stat-sep">•</span>
+                    <span class="stat-item stat-win">Побед: <strong id="stat-won">0</strong></span>
+                    <span class="stat-sep">•</span>
+                    <span class="stat-item stat-loss">Поражений: <strong id="stat-lost">0</strong></span>
+                </div>
+            </div>
+
+            <div class="score-summary">
+                <div class="team-score-badge my-team">
+                    <span class="team-name">Ваша команда</span>
+                    <span class="team-pts" id="score-team0">0</span>
+                    <span class="team-contract-pill" id="contract-team0" title="Взятки / Контракт вашей команды">Контракт: 0/0</span>
+                    <span class="team-bags" id="bags-team0" title="Мешки (6 = −50)">🎒 0/6</span>
+                </div>
+                <span class="score-vs">:</span>
+                <div class="team-score-badge opp-team">
+                    <span class="team-name">Соперники</span>
+                    <span class="team-pts" id="score-team1">0</span>
+                    <span class="team-contract-pill opp-contract-pill" id="contract-team1" title="Взятки / Контракт соперников">Контракт: 0/0</span>
+                    <span class="team-bags" id="bags-team1" title="Мешки (6 = −50)">🎒 0/6</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="btn-sound-toggle" title="Включить / выключить звук"><span id="sound-icon">🔊</span></button>
+                <button class="btn btn-secondary" id="btn-rules" title="Правила игры">❓ Правила</button>
+                <button class="btn btn-secondary" id="btn-history" title="Журнал и история партии">📜 История</button>
+                <button class="btn btn-primary" id="btn-new-game">Новая игра</button>
+            </div>
+        </header>
+
+        <!-- Главная область стола -->
+        <main class="table-area">
+            <div class="felt-table">
+                <!-- Сверху: Игрок 2 (мой партнёр, id=2) -->
+                <div class="player-slot north" id="player-2">
+                    <div class="avatar-box">
+                        <div class="avatar-icon">👨‍✈️</div>
+                        <div class="turn-indicator"></div>
+                    </div>
+                    <div class="player-info">
+                        <div class="player-name" id="name-2">Игрок 2 (Партнёр)</div>
+                        <div class="player-stats">
+                            <span class="bid-badge" id="bid-2">Ставка: —</span>
+                            <span class="tricks-badge" id="tricks-2">Взято: 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Слева: Игрок 3 (соперник, id=1) -->
+                <div class="player-slot west" id="player-1">
+                    <div class="avatar-box">
+                        <div class="avatar-icon">🧔</div>
+                        <div class="turn-indicator"></div>
+                    </div>
+                    <div class="player-info">
+                        <div class="player-name" id="name-1">Игрок 3 (Соперник)</div>
+                        <div class="player-stats">
+                            <span class="bid-badge" id="bid-1">Ставка: —</span>
+                            <span class="tricks-badge" id="tricks-1">Взято: 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Справа: Игрок 4 (соперник, id=3) -->
+                <div class="player-slot east" id="player-3">
+                    <div class="avatar-box">
+                        <div class="avatar-icon">🤠</div>
+                        <div class="turn-indicator"></div>
+                    </div>
+                    <div class="player-info">
+                        <div class="player-name" id="name-3">Игрок 4 (Соперник)</div>
+                        <div class="player-stats">
+                            <span class="bid-badge" id="bid-3">Ставка: —</span>
+                            <span class="tricks-badge" id="tricks-3">Взято: 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Центр стола: текущая взятка -->
+                <div class="trick-center">
+                    <div class="table-felt-felt-ring"></div>
+                    <div class="trick-info">
+                        <span id="trick-title">Взятка 1/13</span>
+                    </div>
+
+                    <div class="trick-cards-layout">
+                        <!-- Места для 4 карт -->
+                        <div class="trick-card-spot north" id="spot-north">
+                            <div class="spot-card-container"></div>
+                        </div>
+                        <div class="trick-card-spot east" id="spot-east">
+                            <div class="spot-card-container"></div>
+                        </div>
+                        <div class="trick-card-spot south" id="spot-south">
+                            <div class="spot-card-container"></div>
+                        </div>
+                        <div class="trick-card-spot west" id="spot-west">
+                            <div class="spot-card-container"></div>
+                        </div>
+                    </div>
+
+                    <!-- Информационное сообщение в центре -->
+                    <div class="center-banner" id="center-message">Загрузка игры...</div>
+                </div>
+
+                <!-- Виджет предыдущей взятки -->
+                <div class="last-trick-widget" id="last-trick-widget">
+                    <div class="last-trick-header">Предыдущая взятка</div>
+                    <div class="last-trick-winner" id="last-trick-winner">Победитель: —</div>
+                    <div class="last-trick-cards" id="last-trick-cards"></div>
+                </div>
+            </div>
+
+            <!-- Нижняя панель игрока: статистика, статус и веер карт -->
+            <div class="player-hand-section" id="player-0">
+                <div class="player-bar">
+                    <div class="human-info">
+                        <div class="human-avatar">😎</div>
+                        <div class="human-text">
+                            <span class="human-name" id="name-0">Игрок 1 (Вы)</span>
+                            <div class="human-badges">
+                                <span class="badge" id="human-bid-badge">Ставка: —</span>
+                                <span class="badge" id="human-tricks-badge">Взято: 0</span>
+                                <span class="badge team-contract-badge" id="human-team-contract">Наш контракт: 0/0</span>
+                                <span class="badge opp-contract-badge" id="opp-team-contract">Контракт соперников: 0/0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Веер карт игрока -->
+                <div class="fan-container" id="fan-container">
+                    <div class="cards-fan" id="cards-fan">
+                        <!-- Карты генерируются через JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Модальное окно: Заказ взяток (Bidding) -->
+        <div class="modal-backdrop" id="bid-modal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2>Сделайте ставку</h2>
+                    <p id="bid-partner-info">Заявка вашего партнёра (Игрок 2): —</p>
+                </div>
+                <div class="modal-body">
+                    <p class="bid-prompt">Сколько взяток из 13 вы планируете взять?</p>
+                    <div class="bid-buttons-grid">
+                        <button class="btn-bid nil-btn" data-bid="0">
+                            <strong>0</strong>
+                            <span>NIL (ноль)</span>
+                            <small>+50 / -50</small>
+                        </button>
+                        <div class="normal-bids-row">
+                            <button class="btn-bid" data-bid="1">1</button>
+                            <button class="btn-bid" data-bid="2">2</button>
+                            <button class="btn-bid" data-bid="3">3</button>
+                            <button class="btn-bid" data-bid="4">4</button>
+                            <button class="btn-bid" data-bid="5">5</button>
+                            <button class="btn-bid" data-bid="6">6</button>
+                            <button class="btn-bid" data-bid="7">7</button>
+                            <button class="btn-bid" data-bid="8">8</button>
+                            <button class="btn-bid" data-bid="9">9</button>
+                            <button class="btn-bid" data-bid="10">10</button>
+                            <button class="btn-bid" data-bid="11">11</button>
+                            <button class="btn-bid" data-bid="12">12</button>
+                            <button class="btn-bid" data-bid="13">13</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно: Итоги раунда -->
+        <div class="modal-backdrop" id="round-summary-modal">
+            <div class="modal-card summary-card">
+                <div class="modal-header">
+                    <h2 id="round-summary-title">Итоги раунда</h2>
+                </div>
+                <div class="modal-body" id="round-summary-content">
+                    <!-- Заполняется динамически -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-large" id="btn-next-round">Следующий раунд &rarr;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно: Завершение партии -->
+        <div class="modal-backdrop" id="game-over-modal">
+            <div class="modal-card gameover-card">
+                <div class="modal-header">
+                    <div class="trophy-icon">🏆</div>
+                    <h2 id="gameover-winner-title">Партия завершена!</h2>
+                </div>
+                <div class="modal-body" id="gameover-content">
+                    <!-- Заполняется динамически -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-large" id="btn-restart-game">Сыграть снова</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно: Настройки новой партии -->
+        <div class="modal-backdrop" id="new-game-modal">
+            <div class="modal-card">
+                <div class="modal-header modal-header-flex">
+                    <h2>Настройки новой партии</h2>
+                    <button class="modal-close-btn" id="btn-close-new-game">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="input-player-name">Ваше имя:</label>
+                        <input type="text" id="input-player-name" class="form-input" value="Игрок 1 (Вы)" maxlength="20">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Режим правил:</label>
+                        <div class="radio-cards-grid">
+                            <label class="radio-card active" id="radio-label-standard">
+                                <input type="radio" name="game-mode" value="standard" checked>
+                                <span class="radio-card-title">Классический</span>
+                                <span class="radio-card-desc">Цель 500 очков • 10 мешков = −100 • Nil: ±100</span>
+                            </label>
+                            <label class="radio-card" id="radio-label-short">
+                                <input type="radio" name="game-mode" value="short">
+                                <span class="radio-card-title">Быстрая партия</span>
+                                <span class="radio-card-desc">Цель 250 очков • 6 мешков = −50 • Nil: ±50</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="select-anim-speed">Скорость ходов ИИ:</label>
+                        <select id="select-anim-speed" class="form-select">
+                            <option value="fast">Быстрая (минимум пауз)</option>
+                            <option value="normal" selected>Обычная (комфортная)</option>
+                            <option value="slow">Плавная (для подробного изучения)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="btn-cancel-new-game">Отмена</button>
+                    <button class="btn btn-primary" id="btn-confirm-new-game">Начать партию</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно: Правила игры -->
+        <div class="modal-backdrop" id="rules-modal">
+            <div class="modal-card rules-card">
+                <div class="modal-header modal-header-flex">
+                    <h2>Правила карточной игры «Пики» (Spades)</h2>
+                    <button class="modal-close-btn" id="btn-close-rules">&times;</button>
+                </div>
+                <div class="modal-body rules-body">
+                    <div class="rules-section">
+                        <h3>♠ Козырная масть</h3>
+                        <p>Постоянный козырь — <strong>Пики (♠)</strong>. Старшинство карт от двойки (2) до туза (Туз — самая сильная карта).</p>
+                    </div>
+                    <div class="rules-section">
+                        <h3>🤝 Команды и раздача</h3>
+                        <p>В игре участвуют 4 игрока, разделённые на 2 команды партнёров напротив друг друга. Каждому раздаётся по 13 карт.</p>
+                    </div>
+                    <div class="rules-section">
+                        <h3>📢 Торговля (Bidding)</h3>
+                        <p>Игроки по очереди объявляют, сколько взяток они планируют выиграть (от 1 до 13), либо объявляют <strong>NIL (0)</strong>. Ставки партнёров суммируются в контракт команды.</p>
+                    </div>
+                    <div class="rules-section">
+                        <h3>🃏 Розыгрыш взяток</h3>
+                        <ul>
+                            <li><strong>Обязательно ходить в масть</strong>, которой открыта взятка, если у вас есть карта этой масти.</li>
+                            <li>Если масти взятки нет — можно сыграть любой картой (перебить козырем ♠ или сбросить лишнюю карту).</li>
+                            <li><strong>Пики не сломаны (Spades Not Broken)</strong>: нельзя открывать взятку с пик, пока пики не были сыграны ранее, кроме случаев, когда на руке остались только пики.</li>
+                        </ul>
+                    </div>
+                    <div class="rules-section">
+                        <h3>🎒 Подсчёт очков и мешки</h3>
+                        <p>Выполненный контракт приносит по 10 очков за каждую заявленную взятку плюс 1 очко за каждый овертрик (мешок). Если команда взяла меньше контракта — штраф −10 очков за каждую заявленную взятку.</p>
+                        <p>При накоплении лимита мешков команда получает штраф (в классическом режиме: каждые 10 мешков = −100 очков).</p>
+                    </div>
+                    <div class="rules-section">
+                        <h3>⭐ Ставка NIL (ноль)</h3>
+                        <p>Если игрок со ставкой Nil взял 0 взяток, команда получает бонус (+100 очков в классике). Если игрок взял хотя бы 1 взятку — штраф (−100 очков).</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="btn-ok-rules">Понятно</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно: Журнал истории партии -->
+        <div class="modal-backdrop" id="history-modal">
+            <div class="modal-card history-card">
+                <div class="modal-header modal-header-flex">
+                    <h2>История партии</h2>
+                    <button class="modal-close-btn" id="btn-close-history">&times;</button>
+                </div>
+                <div class="modal-body" id="history-content">
+                    <p class="history-empty">В этой партии пока нет завершённых раундов.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="btn-close-history-footer">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
